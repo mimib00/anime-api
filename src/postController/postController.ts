@@ -57,4 +57,16 @@ const editPost = async (req: Request, res: Response) => {
     }
 }
 
-export { addPost, editPost }
+const deletePost = async (req: Request, res: Response) => {
+    const { postId } = req.params
+
+    try {
+        const post = db.collection('Anime').doc(postId)
+        await post.delete()
+        res.status(200).send({ status: 'OK', message: "Anime has been deleted" })
+    } catch (error) {
+        res.status(500).json(error.message)
+    }
+}
+
+export { addPost, editPost, deletePost }
