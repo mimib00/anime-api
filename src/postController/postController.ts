@@ -1,5 +1,6 @@
 import { Response } from 'express'
 import { db } from '../config/firebase'
+import * as admin from "firebase-admin"
 
 type PostType = {
     title: string,
@@ -12,6 +13,7 @@ type PostType = {
 type Request = {
     body: PostType,
     params: { postId: string }
+
 }
 
 const addPost = async (req: Request, res: Response) => {
@@ -26,6 +28,7 @@ const addPost = async (req: Request, res: Response) => {
             trailerUrl,
             imageUrl,
             downloadLinks: JSON.parse(downloadLinks),
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
         }
 
         post.set(postObject, { merge: true })
@@ -69,4 +72,28 @@ const deletePost = async (req: Request, res: Response) => {
     }
 }
 
-export { addPost, editPost, deletePost }
+const getPosts = async (req: Request, res: Response) => {
+    try {
+        const allPosts: PostType[] = []
+        const snap = await db.collection('Anime').limit(15).orderBy('createdAt', 'asc').get()
+        snap.forEach((doc: any) => allPosts.push(doc.data()))
+        return res.status(200).json({ status: 'OK', data: allPosts })
+    } catch (error) {
+        return res.status(500).json(error.message)
+    }
+}
+
+const searchPost = async (req: any, res: Response) => {
+    const query = req.query.q
+    console.log(query)
+    try {
+        const searchPosts: PostType[] = []
+        const snap = await db.collection('Anime').limit(10).where('title', '==', query).orderBy('createdAt', 'asc').get()
+        snap.forEach((doc: any) => searchPosts.push(doc.data()))
+        return res.status(200).json({ status: 'OK', data: searchPosts })
+    } catch (error) {
+        return res.status(500).json(error.message)
+    }
+}
+
+export { addPost, editPost, deletePost, getPosts, searchPost }
