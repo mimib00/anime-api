@@ -23,7 +23,7 @@ const addPost = async (req: Request, res: Response) => {
         const post = db.collection('Anime').doc()
         const postObject = {
             id: post.id,
-            title,
+            title: title.toLowerCase(),
             discription,
             trailerUrl,
             imageUrl,
@@ -88,7 +88,7 @@ const searchPost = async (req: any, res: Response) => {
     console.log(query)
     try {
         const searchPosts: PostType[] = []
-        const snap = await db.collection('Anime').limit(10).where('title', '==', query).orderBy('createdAt', 'asc').get()
+        const snap = await db.collection('Anime').where('title', '==', query).limit(10).orderBy('createdAt', 'asc').get()
         snap.forEach((doc: any) => searchPosts.push(doc.data()))
         return res.status(200).json({ status: 'OK', data: searchPosts })
     } catch (error) {
